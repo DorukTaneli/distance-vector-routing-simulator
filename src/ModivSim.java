@@ -1,11 +1,12 @@
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Scanner;
 
 public class ModivSim {
 
-    private List<Node> nodeList;
+    private static List<Node> nodeList = new ArrayList<Node>();
 
     public static void main(String[] args) {
 
@@ -14,7 +15,7 @@ public class ModivSim {
         Hashtable<Integer, Integer> linkBandwidth;
         BufferedReader reader =
                 new BufferedReader(new InputStreamReader(System.in));
-        System.out.println("Enter the file name to create the router:");
+        System.out.println("Enter the file name to create the router node:");
         String user_input = null;
         try {
             user_input = reader.readLine();
@@ -22,12 +23,29 @@ public class ModivSim {
             e.printStackTrace();
         }
         while(!user_input.equalsIgnoreCase("done")){
-            System.out.println(user_input);
+            linkCost = new Hashtable<>();
+            linkBandwidth = new Hashtable<>();
             try {
                 File nodeFile = new File(user_input);
                 Scanner myReader = new Scanner(nodeFile);
                 String nodeInfo = myReader.nextLine();
-                System.out.println(nodeInfo);
+                String formatter[] = nodeInfo.split(",", 2);
+                int nodeID = Integer.parseInt(formatter[0]);
+                formatter = formatter[1].split("\\(", -1);
+                //Create the linkCost and linkBandwidth maps based on the info read from the file
+                for(String info : formatter){
+                    if(!info.equals("")){
+                        info = info.replace(")", "");
+                        String formatted_info[] = info.split(",", -1);
+                        int neighborID = Integer.parseInt(formatted_info[0]);
+                        int cost = Integer.parseInt(formatted_info[1]);
+                        int bandwidth = Integer.parseInt(formatted_info[2]);
+                        linkCost.put(neighborID, cost);
+                        linkBandwidth.put(neighborID, bandwidth);
+                    }
+                }
+                Node node = new Node(nodeID, linkCost, linkBandwidth);
+                nodeList.add(nodeID, node);
                 myReader.close();
             } catch (FileNotFoundException e) {
                 System.out.println("An error occurred.");

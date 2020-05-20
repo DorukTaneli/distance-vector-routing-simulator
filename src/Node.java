@@ -9,6 +9,7 @@ public class Node {
     private Hashtable<Integer, Integer> linkBandwidth;
     private int[][] distanceTable;
     private List<Integer> bottleNeckBandwidthTable;
+    private boolean isConverged;
 
     public Node(int nodeID, Hashtable<Integer, Integer> linkCost, Hashtable<Integer, Integer> linkBandwidth) {
         this.nodeID = nodeID;
@@ -16,6 +17,7 @@ public class Node {
         this.linkBandwidth = linkBandwidth;
         this.distanceTable = new int[10][10];
         this.bottleNeckBandwidthTable = new ArrayList<Integer>();
+        isConverged = false;
 
     }
 
