@@ -10,6 +10,13 @@ public class ModivSim {
 
     public static void main(String[] args) {
 
+        createTopology();
+        
+
+
+    }
+
+    private static void createTopology() {
         // Read the topology from file. Each line in the text represents a node. It assumes that all the nodes are contained in the single file
         Hashtable<Integer, Integer> linkCost;
         Hashtable<Integer, Integer> linkBandwidth;
@@ -59,7 +66,6 @@ public class ModivSim {
             }
         }
         System.out.println("Topology created.");
-
 
     }
 
