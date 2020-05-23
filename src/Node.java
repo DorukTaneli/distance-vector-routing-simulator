@@ -72,6 +72,14 @@ public class Node {
 
     //Getter and setter methods
 
+    public boolean isConverged() {
+        return isConverged;
+    }
+
+    public void setConverged(boolean converged) {
+        isConverged = converged;
+    }
+
     public void setNodeID(int nodeID) {
         this.nodeID = nodeID;
     }
