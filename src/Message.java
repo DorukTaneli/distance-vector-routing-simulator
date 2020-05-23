@@ -11,4 +11,20 @@ public class Message {
         this.linkBandwith = linkBandwith;
         this.distanceVector = distanceVector;
     }
+
+    public int getSenderID() {
+        return senderID;
+    }
+
+    public int getReceiverID() {
+        return receiverID;
+    }
+
+    public int getLinkBandwith() {
+        return linkBandwith;
+    }
+
+    public int[] getDistanceVector() {
+        return distanceVector;
+    }
 }

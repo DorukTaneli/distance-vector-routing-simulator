@@ -6,18 +6,24 @@ import java.util.Scanner;
 
 public class ModivSim {
 
+    // Holds the nodes in the topology
     private static List<Node> nodeList = new ArrayList<Node>();
 
     public static void main(String[] args) {
 
         createTopology();
-        
+
 
 
     }
 
+    /**
+     * <p>
+     *     Prompts the user to enter the file name containing the node information. Creates a node object and adds the node to the nodeList.
+     *     Process stops when the user enters "done" as input.
+     * </p>
+     */
     private static void createTopology() {
-        // Read the topology from file. Each line in the text represents a node. It assumes that all the nodes are contained in the single file
         Hashtable<Integer, Integer> linkCost;
         Hashtable<Integer, Integer> linkBandwidth;
         BufferedReader reader =
