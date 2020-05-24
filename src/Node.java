@@ -84,9 +84,32 @@ public class Node {
         return false;
     }
 
-    //TODO
+    /**
+     * <p>
+     *     Constructs the forwarding table for the node based on the distanceTable. The key in the forwarding table denotes the destination node and the values are the first two nodes with the
+     *     lowest path cost to the destination in ascending order.
+     * </p>
+     * @return forwardingTable to instruct the node which node it should forward the packet for the given destination
+     */
     public Hashtable<String, String> getForwardingTable(){
         Hashtable<String, String> forwardingTable = new Hashtable<String, String>();
+        for(int j=0; j<distanceTable[0].length; j++){
+            int cost1 = 999;
+            int cost2 = 999;
+            int node1 = 999;
+            int node2 = 999;
+            for(int i=0; i<distanceTable.length; i++){
+                if(distanceTable[i][j]<cost1){
+                    cost1 = distanceTable[i][j];
+                    node1 = i;
+                }
+                else if(distanceTable[i][j]<cost2){
+                    distanceTable[i][j]=cost2;
+                    node2 = i;
+                }
+            }
+            forwardingTable.put(Integer.toString(j), '(' + Integer.toString(node1) + ',' + Integer.toString(node2) + ')');
+        }
 
         return forwardingTable;
     }
