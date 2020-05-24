@@ -17,8 +17,10 @@ public class Node {
         this.linkCost = linkCost;
         this.linkBandwidth = linkBandwidth;
         this.distanceTable = new int[10][10]; //distanceTable[i][j] gives the cost to reach j from neighbor i
-        Arrays.fill(distanceTable, 999);
-        makeDistanceTable(linkCost);
+        for(int i=0; i<10; i++){
+            Arrays.fill(distanceTable[i], 999);
+        }
+        makeDistanceTable(this.linkCost);
         this.bottleNeckBandwidthTable = new ArrayList<Integer>();
         isConverged = false;
 
@@ -32,7 +34,10 @@ public class Node {
      */
     private void makeDistanceTable(Hashtable<Integer, Integer> linkCost) {
         for(int i=0; i<linkCost.size(); i++){
-            distanceTable[i][i] = linkCost.get(i);
+            if(linkCost.get(i) != null){
+                distanceTable[i][i] = linkCost.get(i);
+            }
+
         }
     }
 
