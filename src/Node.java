@@ -6,7 +6,8 @@ import java.util.List;
 public class Node {
 
     private int nodeID;
-    private Hashtable<Integer, Integer> linkCost;
+    private Hashtable <Integer, Node> neighbors;
+    private Hashtable<Integer, Integer> linkCost; //holds the link costs to the node's direct neighbors
     private Hashtable<Integer, Integer> linkBandwidth;
     private int[][] distanceTable;
     private List<Integer> bottleNeckBandwidthTable;
@@ -57,7 +58,15 @@ public class Node {
             }
         }
     }
-    //TODO
+
+    /**
+     * <p>
+     *     This methods is called when the node has an update in its distanceTable and needs to notify its neighbors. The method creates the distance vector for the node
+     *     that contains the shortest path values to all other nodes, creates a message object and passes the message object by calling the receiveUpdate method of its direct
+     *     neighbors.
+     * </p>
+     * @return true if the update message is sent correctly, false if the update message is not sent (i.e. node is converged)
+     */
     public boolean sendUpdate(){
         if(!isConverged){
             Message message;
@@ -76,8 +85,8 @@ public class Node {
                 if(linkCost.containsKey(i)){
                     int neighborID = i;
                     message = new Message(this.nodeID, neighborID, linkBandwidth.get(i), distanceVector);
+                    neighbors.get(i).receiveUpdate(message);
                 }
-
             }
             return true;
         }
@@ -110,7 +119,6 @@ public class Node {
             }
             forwardingTable.put(Integer.toString(j), '(' + Integer.toString(node1) + ',' + Integer.toString(node2) + ')');
         }
-
         return forwardingTable;
     }
 
@@ -187,6 +195,14 @@ public class Node {
 
     public int[][] getDistanceTable() {
         return distanceTable;
+    }
+
+    public void setNeighbors(Hashtable<Integer, Node> neighbors) {
+        this.neighbors = neighbors;
+    }
+
+    public Hashtable<Integer, Node> getNeighbors() {
+        return neighbors;
     }
 
 

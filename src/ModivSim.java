@@ -12,6 +12,7 @@ public class ModivSim {
     public static void main(String[] args) {
 
         createTopology();
+        setNeighbors();
 
 
 
@@ -72,6 +73,25 @@ public class ModivSim {
             }
         }
         System.out.println("Topology created.");
+
+    }
+
+    /**
+     * <p>
+     *     Fills the neighbors Hashtable in each node object with a reference to the node objects stored in the nodeList.
+     * </p>
+     */
+    private static void setNeighbors(){
+        Hashtable <Integer, Node> neighbors = new Hashtable<Integer, Node>();
+        for (Node node: nodeList){
+            for(int i=0; i<node.getLinkCost().size(); i++){
+                if(node.getLinkCost().containsKey(i)){
+                    neighbors.put(i, nodeList.get(i));
+                }
+            }
+            node.setNeighbors(neighbors);
+        }
+
 
     }
 
