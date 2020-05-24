@@ -82,8 +82,9 @@ public class ModivSim {
      * </p>
      */
     private static void setNeighbors(){
-        Hashtable <Integer, Node> neighbors = new Hashtable<Integer, Node>();
+        Hashtable <Integer, Node> neighbors;
         for (Node node: nodeList){
+            neighbors = new Hashtable<Integer, Node>();
             for(int i=0; i<node.getLinkCost().size(); i++){
                 if(node.getLinkCost().containsKey(i)){
                     neighbors.put(i, nodeList.get(i));
