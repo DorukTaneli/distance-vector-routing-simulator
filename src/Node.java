@@ -243,5 +243,9 @@ public class Node extends Thread {
         return neighbors;
     }
 
+	public List<Integer> getBottleNeckBandwidthTable() {
+		return bottleNeckBandwidthTable;
+	}
+
 
 }
