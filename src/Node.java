@@ -11,7 +11,7 @@ public class Node extends Thread {
     private NodeGUI nodeGUI;
     private int nonEntry = 0;
     private int nodeListSize;
-    private boolean isInUse;
+    private int inUse = 0;
 
     public Node(int nodeID, Hashtable<Integer, Integer> linkCost, Hashtable<Integer, Integer> linkBandwidth, int size) {
         this.nodeID = nodeID;
@@ -248,12 +248,12 @@ public class Node extends Thread {
 		return bottleNeckBandwidthTable;
 	}
 
-	public boolean isInUse() {
-		return isInUse;
+	public int getInUse() {
+		return inUse;
 	}
 
-	public void setInUse(boolean isInUse) {
-		this.isInUse = isInUse;
+	public void setInUse(int inUse) {
+		this.inUse = inUse;
 	}
 
 

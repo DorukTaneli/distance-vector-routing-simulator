@@ -45,10 +45,10 @@ public class ModivSim {
         */
         
         System.out.println("Reading flows from flow.txt");
-        FlowRouter fr = new FlowRouter();
-        fr.GetFlowsFromFile(nodeList);
+        FlowRouter fr = new FlowRouter(nodeList);
         fr.PrintFlows();
-        
+        System.out.println("Processing Flows");
+        fr.StartFlows();
     }
 
     /**

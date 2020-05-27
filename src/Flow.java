@@ -29,11 +29,14 @@ public class Flow {
 		return flowSize;
 	}
 
+	public void setFlowSize(int flowSize) {
+		this.flowSize = flowSize;
+	}
+	
 	@Override
 	public String toString() {
 		return "Flow [name=" + name + ", startNode=" + start.getNodeID() + 
 				", endNode=" + end.getNodeID() + ", flowSize=" + flowSize + "]";
 	}
-	
 	
 }
