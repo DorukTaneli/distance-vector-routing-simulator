@@ -36,6 +36,7 @@ public class Node extends Thread{
         for(Map.Entry<Integer, Integer> entry : linkCost.entrySet()) {
             int neighborID = entry.getKey();
             distanceTable[this.nodeID][neighborID] = linkCost.get(neighborID);
+            distanceTable[neighborID][this.nodeID] = linkCost.get(neighborID);
         }
     }
 
