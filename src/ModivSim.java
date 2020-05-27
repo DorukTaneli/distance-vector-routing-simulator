@@ -112,10 +112,9 @@ public class ModivSim {
         Hashtable <Integer, Node> neighbors;
         for (Node node: nodeList){
             neighbors = new Hashtable<Integer, Node>();
-            for(int i=0; i<node.getLinkCost().size(); i++){
-                if(node.getLinkCost().containsKey(i)){
-                    neighbors.put(i, nodeList.get(i));
-                }
+            for(Map.Entry<Integer, Integer> entry : node.getLinkBandwidth().entrySet()) {
+                int neighborID = entry.getKey();
+                neighbors.put(neighborID, nodeList.get(neighborID));
             }
             node.setNeighbors(neighbors);
         }

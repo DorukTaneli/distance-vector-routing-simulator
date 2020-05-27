@@ -32,11 +32,10 @@ public class Node extends Thread{
      * @param linkCost hashtable that holds the cost to the direct neighbor i. The keys and values are integers
      */
     private void makeDistanceTable(Hashtable<Integer, Integer> linkCost) {
-        for(int i=0; i<linkCost.size(); i++){
-            if(linkCost.get(i) != null){
-                System.out.println(linkCost.get(i));
-                distanceTable[i][i] = linkCost.get(i);
-            }
+        distanceTable[this.nodeID][this.nodeID] = 0;
+        for(Map.Entry<Integer, Integer> entry : linkCost.entrySet()) {
+            int neighborID = entry.getKey();
+            distanceTable[neighborID][neighborID] = linkCost.get(neighborID);
         }
     }
 
@@ -81,12 +80,10 @@ public class Node extends Thread{
                 }
             }
             // Traverse all the neighbors and notify them
-            for(int i = 0; i<linkCost.size(); i++){
-                if(linkCost.containsKey(i)){
-                    int neighborID = i;
-                    message = new Message(this.nodeID, neighborID, linkBandwidth.get(i), distanceVector);
-                    neighbors.get(i).receiveUpdate(message);
-                }
+            for(Map.Entry<Integer, Integer> entry : linkCost.entrySet()) {
+                int neighborID = entry.getKey();
+                message = new Message(this.nodeID, neighborID, linkBandwidth.get(neighborID), distanceVector);
+                neighbors.get(neighborID).receiveUpdate(message);
             }
             return true;
         }
