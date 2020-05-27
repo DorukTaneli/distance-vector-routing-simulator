@@ -52,17 +52,21 @@ public class Node extends Thread {
     public void receiveUpdate(Message m){
         int sourceNode = m.getSenderID();
         int[] distanceVectorReceived = m.getDistanceVector();
+        for (int distance: distanceVectorReceived) {
+            nodeGUI.print(distance + " abc ");
+        }
         for(int i =0; i < distanceVectorReceived.length; i++){
-            if(distanceVectorReceived[i] < distanceTable[sourceNode][i]){
-                nodeGUI.println("Entry changed from: " + distanceTable[sourceNode][i] + " to " + distanceVectorReceived[i]);
-                addToDistanceTable(sourceNode, i, distanceVectorReceived[i]);
-            } else {
-                nonEntry++;
-            }
+            //if(distanceVectorReceived[i] < distanceTable[sourceNode][i]){
+                //nodeGUI.println("Entry changed from: " + distanceTable[sourceNode][i] + " to " + distanceVectorReceived[i]);
+            this.distanceTable[sourceNode][i] = Math.min(distanceVectorReceived[i], distanceTable[sourceNode][i]);
+                //addToDistanceTable(sourceNode, i, distanceVectorReceived[i]);
+            //} else {
+                //nonEntry++;
+            //}
         }
-        if (nonEntry >= nodeListSize) {
-            isConverged = true;
-        }
+        //if (nonEntry >= nodeListSize) {
+         //   isConverged = true;
+        //}
     }
 
     /**
@@ -80,11 +84,14 @@ public class Node extends Thread {
             // Make the distance vector based on shortest paths to all nodes
             for(int j=0; j < distanceTable[0].length; j++){
                 distanceVector[j] = 999;
+                /*
                 for(int i=0; i < distanceTable.length; i++){
                     if(distanceTable[i][j] < distanceVector[j]){
                         distanceVector[j] = distanceTable[i][j];
                     }
                 }
+                */
+                distanceVector[j] = Math.min(distanceVector[j], distanceTable[nodeID][j]);
             }
             // Traverse all the neighbors and notify them
             for(Map.Entry<Integer, Integer> entry : linkCost.entrySet()) {
@@ -165,7 +172,7 @@ public class Node extends Thread {
             }
             setDistanceTable(temp);
         }
-        this.distanceTable[destination][neighbor] = cost;
+        this.distanceTable[neighbor][destination] = cost;
     }
     public void addToBottleNeckBandwidthTable(int neighbor, int cost){
         this.bottleNeckBandwidthTable.add(neighbor, cost);

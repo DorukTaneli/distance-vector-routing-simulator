@@ -23,7 +23,17 @@ public class ModivSim {
         for (Node node: nodeList){
             node.printInfo();
         }
-        //sendDistanceVectors();
+        sendDistanceVectors();
+        for (Node node: nodeList){
+            node.getNodeGUI().println("dst  |   0   1   2   3   4");
+            for (int[] table: node.getDistanceTable()) {
+                node.getNodeGUI().print("router  |");
+                for (int distance: table) {
+                    node.getNodeGUI().print("  " + distance);
+                }
+                node.getNodeGUI().print("\n");
+            }
+        }
         /*
         for (int i=0; i<10; i++) {
             distanceVectorRouting();
