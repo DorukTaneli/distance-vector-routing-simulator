@@ -43,7 +43,12 @@ public class ModivSim {
         }
         distanceVectorRouting();
         */
-
+        
+        System.out.println("Reading flows from flow.txt");
+        FlowRouter fr = new FlowRouter();
+        fr.GetFlowsFromFile(nodeList);
+        fr.PrintFlows();
+        
     }
 
     /**
