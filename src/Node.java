@@ -1,10 +1,6 @@
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Hashtable;
-import java.util.List;
+import java.util.*;
 
-public class Node {
-
+public class Node extends Thread {
     private int nodeID;
     private Hashtable <Integer, Node> neighbors;
     private Hashtable<Integer, Integer> linkCost; //holds the link costs to the node's direct neighbors
@@ -12,19 +8,24 @@ public class Node {
     private int[][] distanceTable;
     private List<Integer> bottleNeckBandwidthTable;
     private boolean isConverged;
+    private NodeGUI nodeGUI;
+    private int nonEntry = 0;
+    private int nodeListSize;
+    private int inUse = 0;
 
-    public Node(int nodeID, Hashtable<Integer, Integer> linkCost, Hashtable<Integer, Integer> linkBandwidth) {
+    public Node(int nodeID, Hashtable<Integer, Integer> linkCost, Hashtable<Integer, Integer> linkBandwidth, int size) {
         this.nodeID = nodeID;
         this.linkCost = linkCost;
         this.linkBandwidth = linkBandwidth;
-        this.distanceTable = new int[10][10]; //distanceTable[i][j] gives the cost to reach j from neighbor i
-        for(int i=0; i<10; i++){
+        this.distanceTable = new int[size][size]; //distanceTable[i][j] gives the cost to reach j from neighbor i
+        nodeListSize = size;
+        for(int i=0; i<size; i++){
             Arrays.fill(distanceTable[i], 999);
         }
         makeDistanceTable(this.linkCost);
         this.bottleNeckBandwidthTable = new ArrayList<Integer>();
         isConverged = false;
-
+        nodeGUI = new NodeGUI("     Router "+ nodeID + "     ");
     }
 
     /**
@@ -34,11 +35,11 @@ public class Node {
      * @param linkCost hashtable that holds the cost to the direct neighbor i. The keys and values are integers
      */
     private void makeDistanceTable(Hashtable<Integer, Integer> linkCost) {
-        for(int i=0; i<linkCost.size(); i++){
-            if(linkCost.get(i) != null){
-                distanceTable[i][i] = linkCost.get(i);
-            }
-
+        distanceTable[this.nodeID][this.nodeID] = 0;
+        for(Map.Entry<Integer, Integer> entry : linkCost.entrySet()) {
+            int neighborID = entry.getKey();
+            distanceTable[this.nodeID][neighborID] = linkCost.get(neighborID);
+            distanceTable[neighborID][this.nodeID] = linkCost.get(neighborID);
         }
     }
 
@@ -52,11 +53,21 @@ public class Node {
     public void receiveUpdate(Message m){
         int sourceNode = m.getSenderID();
         int[] distanceVectorReceived = m.getDistanceVector();
-        for(int i =0; i < distanceVectorReceived.length; i++){
-            if(distanceVectorReceived[i] < distanceTable[sourceNode][i]){
-               addToDistanceTable(sourceNode, i,distanceVectorReceived[i]);
-            }
+        for (int distance: distanceVectorReceived) {
+            nodeGUI.print(distance + " abc ");
         }
+        for(int i =0; i < distanceVectorReceived.length; i++){
+            //if(distanceVectorReceived[i] < distanceTable[sourceNode][i]){
+                //nodeGUI.println("Entry changed from: " + distanceTable[sourceNode][i] + " to " + distanceVectorReceived[i]);
+            this.distanceTable[sourceNode][i] = Math.min(distanceVectorReceived[i], distanceTable[sourceNode][i]);
+                //addToDistanceTable(sourceNode, i, distanceVectorReceived[i]);
+            //} else {
+                //nonEntry++;
+            //}
+        }
+        //if (nonEntry >= nodeListSize) {
+         //   isConverged = true;
+        //}
     }
 
     /**
@@ -72,24 +83,37 @@ public class Node {
             Message message;
             int distanceVector[] = new int[distanceTable[0].length];
             // Make the distance vector based on shortest paths to all nodes
-            for(int j=0; j<distanceTable[0].length; j++){
+            for(int j=0; j < distanceTable[0].length; j++){
                 distanceVector[j] = 999;
-                for(int i=0; i<distanceTable.length; i++){
-                    if(distanceTable[i][j]<distanceVector[j]){
+                /*
+                for(int i=0; i < distanceTable.length; i++){
+                    if(distanceTable[i][j] < distanceVector[j]){
                         distanceVector[j] = distanceTable[i][j];
                     }
                 }
+                */
+                distanceVector[j] = Math.min(distanceVector[j], distanceTable[nodeID][j]);
             }
             // Traverse all the neighbors and notify them
-            for(int i = 0; i<linkCost.size(); i++){
-                if(linkCost.containsKey(i)){
-                    int neighborID = i;
-                    message = new Message(this.nodeID, neighborID, linkBandwidth.get(i), distanceVector);
-                    neighbors.get(i).receiveUpdate(message);
-                }
+            for(Map.Entry<Integer, Integer> entry : linkCost.entrySet()) {
+                int neighborID = entry.getKey();
+                message = new Message(this.nodeID, neighborID, linkBandwidth.get(neighborID), distanceVector);
+                neighbors.get(neighborID).receiveUpdate(message);
             }
             return true;
         }
+        System.out.println(nodeID);
+        /*
+        System.out.println("dst  |   0   1   2   3   4");
+        for (int[] table: distanceTable) {
+            System.out.print("router  |");
+            for (int distance: table) {
+                System.out.print("  " + distance);
+            }
+            System.out.print("\n");
+        }
+
+         */
         return false;
     }
 
@@ -129,7 +153,7 @@ public class Node {
         this.linkBandwidth.put(neighbor, cost);
     }
     public void addToDistanceTable(int neighbor, int destination, int cost){
-        //If the index of the neigbor or the destination exceeds the size of the distanceTable
+        //If the index of the neighbor or the destination exceeds the size of the distanceTable
         //increase its size
         if(distanceTable.length < neighbor) {
             int[][] temp = new int[neighbor + 10][neighbor + 10];
@@ -149,12 +173,25 @@ public class Node {
             }
             setDistanceTable(temp);
         }
-        this.distanceTable[destination][neighbor] = cost;
+        this.distanceTable[neighbor][destination] = cost;
     }
     public void addToBottleNeckBandwidthTable(int neighbor, int cost){
         this.bottleNeckBandwidthTable.add(neighbor, cost);
     }
 
+    public void printInfo() {
+        for (int distance: distanceTable[nodeID]) {
+            nodeGUI.print("   " + distance);
+        }
+        nodeGUI.println();
+        Hashtable<String, String> forwardingTable = getForwardingTable();
+        Iterator<Map.Entry<String, String>> itr = forwardingTable.entrySet().iterator();
+        Map.Entry<String, String> entry = null;
+        while(itr.hasNext()){
+            entry = itr.next();
+            nodeGUI.println(entry.getKey() + "->" + entry.getValue());
+        }
+    }
     //Getter and setter methods
 
     public boolean isConverged() {
@@ -197,6 +234,8 @@ public class Node {
         return distanceTable;
     }
 
+    public NodeGUI getNodeGUI() { return nodeGUI; }
+
     public void setNeighbors(Hashtable<Integer, Node> neighbors) {
         this.neighbors = neighbors;
     }
@@ -204,6 +243,18 @@ public class Node {
     public Hashtable<Integer, Node> getNeighbors() {
         return neighbors;
     }
+
+	public List<Integer> getBottleNeckBandwidthTable() {
+		return bottleNeckBandwidthTable;
+	}
+
+	public int getInUse() {
+		return inUse;
+	}
+
+	public void setInUse(int inUse) {
+		this.inUse = inUse;
+	}
 
 
 }

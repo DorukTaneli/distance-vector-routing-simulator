@@ -1,21 +1,54 @@
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class ModivSim {
-
     // Holds the nodes in the topology
     private static List<Node> nodeList = new ArrayList<Node>();
 
     public static void main(String[] args) {
-
         createTopology();
         setNeighbors();
-
-
-
+        for (Node node: nodeList) {
+            System.out.println(node.getNodeID());
+            node.getNodeGUI().println("dst  |   0   1   2   3   4");
+            for (int[] table: node.getDistanceTable()) {
+                node.getNodeGUI().print("router  |");
+                for (int distance: table) {
+                    node.getNodeGUI().print("  " + distance);
+                }
+                node.getNodeGUI().print("\n");
+            }
+        }
+        for (Node node: nodeList){
+            node.printInfo();
+        }
+        sendDistanceVectors();
+        for (Node node: nodeList){
+            node.getNodeGUI().println("dst  |   0   1   2   3   4");
+            for (int[] table: node.getDistanceTable()) {
+                node.getNodeGUI().print("router  |");
+                for (int distance: table) {
+                    node.getNodeGUI().print("  " + distance);
+                }
+                node.getNodeGUI().print("\n");
+            }
+        }
+        /*
+        for (int i=0; i<10; i++) {
+            distanceVectorRouting();
+        }
+        for (Node node: nodeList) {
+            node.setConverged(true);
+        }
+        distanceVectorRouting();
+        */
+        
+        System.out.println("Reading flows from flow.txt");
+        FlowRouter fr = new FlowRouter(nodeList);
+        fr.PrintFlows();
+        System.out.println("Processing Flows");
+        fr.StartFlows();
     }
 
     /**
@@ -25,6 +58,7 @@ public class ModivSim {
      * </p>
      */
     private static void createTopology() {
+        int size = 5;
         Hashtable<Integer, Integer> linkCost;
         Hashtable<Integer, Integer> linkBandwidth;
         BufferedReader reader =
@@ -53,16 +87,24 @@ public class ModivSim {
                         String formatted_info[] = info.split(",", -1);
                         int neighborID = Integer.parseInt(formatted_info[0]);
                         int cost = Integer.parseInt(formatted_info[1]);
-                        int bandwidth = Integer.parseInt(formatted_info[2]);
+                        //System.out.println(formatted_info[2].trim() + "a");
+                        int bandwidth = Integer.parseInt(formatted_info[2].trim());
                         linkCost.put(neighborID, cost);
                         linkBandwidth.put(neighborID, bandwidth);
                     }
                 }
-                Node node = new Node(nodeID, linkCost, linkBandwidth);
+                Iterator<Map.Entry<Integer, Integer>> itr = linkCost.entrySet().iterator();
+                Map.Entry<Integer, Integer> entry = null;
+                while(itr.hasNext()){
+                    entry = itr.next();
+                    System.out.println(entry.getKey() + "->" + entry.getValue());
+                }
+                Node node = new Node(nodeID, linkCost, linkBandwidth, size);
                 nodeList.add(nodeID, node);
                 myReader.close();
+
             } catch (FileNotFoundException e) {
-                System.out.println("An error occurred.");
+                System.out.println("File name doesn't exist.");
                 e.printStackTrace();
             }
             System.out.println("Node created. Enter another file name or type 'done':");
@@ -73,7 +115,6 @@ public class ModivSim {
             }
         }
         System.out.println("Topology created.");
-
     }
 
     /**
@@ -85,16 +126,49 @@ public class ModivSim {
         Hashtable <Integer, Node> neighbors;
         for (Node node: nodeList){
             neighbors = new Hashtable<Integer, Node>();
-            for(int i=0; i<node.getLinkCost().size(); i++){
-                if(node.getLinkCost().containsKey(i)){
-                    neighbors.put(i, nodeList.get(i));
-                }
+            for(Map.Entry<Integer, Integer> entry : node.getLinkBandwidth().entrySet()) {
+                int neighborID = entry.getKey();
+                neighbors.put(neighborID, nodeList.get(neighborID));
             }
             node.setNeighbors(neighbors);
         }
-
-
     }
 
+    private static void sendDistanceVectors() {
+        for (Node node: nodeList){
+            node.sendUpdate();
+        }
+    }
 
+    private static void distanceVectorRouting() throws IOException, InterruptedException {
+        BufferedReader input =
+                new BufferedReader(new InputStreamReader(System.in));
+        System.out.println("Please enter the period of time (s) for DVR algorithm to work: ");
+        String p = new String();
+        p = input.readLine();
+        while(true) {
+            int convergence = 0;
+            for (Node node: nodeList){
+                node.sendUpdate();
+                //for (int[] distanceTable: node.getDistanceTable()) {
+                //   System.out.println("--- a dt ---");
+                //   for (int distance: distanceTable) {
+                //       System.out.println(distance);
+                //   }
+                //}
+                if (node.isConverged()) {
+                    convergence++;
+                }
+            }
+            if (convergence == nodeList.size()) {
+                System.out.println("END");
+                break;
+            }
+            TimeUnit.SECONDS.sleep(Long.parseLong(p));
+        }
+        for (Node node: nodeList){
+            node.printInfo();
+        }
+
+    }
 }
