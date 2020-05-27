@@ -18,7 +18,9 @@ public class FlowRouter {
 	private Runnable decreaseInUseTimesAndProcessFlowIteration = new Runnable() {
 	    public void run() {
 	        for (Node n: nodeList) {
-	        	n.setInUse(n.getInUse() - period);
+	        	if (n.getInUse() > 0) {
+		        	n.setInUse(n.getInUse() - period);
+	        	}
 	        }
 	        processFlows();
             if (flows.isEmpty()) {
@@ -69,14 +71,16 @@ public class FlowRouter {
 	public void processFlows() {
 		System.out.println("\nt=" + t);
 		t += period;
+		queue.clear();
+		
 		for (Flow f : flows) {
 			System.out.println(f.toString());
 			
 			List<Integer> bottleneckTable = f.getStart().getBottleNeckBandwidthTable();
 			
 /*uncomment when part2 is finished
-			int bnbandwidth = bottleneckTable.get(f.getEnd().getNodeID());
-			System.out.println(bnbandwidth);
+			int bottleneckBandwidth = bottleneckTable.get(f.getEnd().getNodeID());
+			System.out.println(bottleneckBandwidth);
 */
 			
 			Node currentNode = f.getStart();
@@ -110,16 +114,16 @@ public class FlowRouter {
 			if (!queue.contains(f)) {
 /*uncomment when part2 is finished
 				for (Node n: passedNodes) {
-					n.setInUse(f.getFlowSize()/bnbandwidth);
+					n.setInUse(f.getFlowSize()/bottleneckBandwidth);
 				}
-				f.setFlowSize(f.getFlowSize() - period*bnbandwidth);
+				f.setFlowSize(f.getFlowSize() - period*bottleneckBandwidth);
 */
 				if (f.getFlowSize() <= 0) {
 					flows.remove(f);
 				}
 				System.out.println("Route: " + route + "\tBandwidth: ");
 /*uncomment when part2 is finished
-				System.out.print(bnbandwidth);
+				System.out.print(bottleneckBandwidth);
 */
 			} else {
 				System.out.println("in queue...");
