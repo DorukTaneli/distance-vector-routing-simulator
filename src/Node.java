@@ -1,6 +1,6 @@
 import java.util.*;
 
-public class Node extends Thread{
+public class Node extends Thread {
     private int nodeID;
     private Hashtable <Integer, Node> neighbors;
     private Hashtable<Integer, Integer> linkCost; //holds the link costs to the node's direct neighbors
@@ -8,21 +8,23 @@ public class Node extends Thread{
     private int[][] distanceTable;
     private List<Integer> bottleNeckBandwidthTable;
     private boolean isConverged;
-    private TextArea nodeGUI;
+    private NodeGUI nodeGUI;
+    private int nonEntry = 0;
+    private int nodeListSize;
 
     public Node(int nodeID, Hashtable<Integer, Integer> linkCost, Hashtable<Integer, Integer> linkBandwidth, int size) {
         this.nodeID = nodeID;
         this.linkCost = linkCost;
         this.linkBandwidth = linkBandwidth;
         this.distanceTable = new int[size][size]; //distanceTable[i][j] gives the cost to reach j from neighbor i
+        nodeListSize = size;
         for(int i=0; i<size; i++){
             Arrays.fill(distanceTable[i], 999);
         }
         makeDistanceTable(this.linkCost);
         this.bottleNeckBandwidthTable = new ArrayList<Integer>();
         isConverged = false;
-        nodeGUI = new TextArea("     Router "+ nodeID + "     ");
-
+        nodeGUI = new NodeGUI("     Router "+ nodeID + "     ");
     }
 
     /**
@@ -54,7 +56,12 @@ public class Node extends Thread{
             if(distanceVectorReceived[i] < distanceTable[sourceNode][i]){
                 nodeGUI.println("Entry changed from: " + distanceTable[sourceNode][i] + " to " + distanceVectorReceived[i]);
                 addToDistanceTable(sourceNode, i, distanceVectorReceived[i]);
+            } else {
+                nonEntry++;
             }
+        }
+        if (nonEntry >= nodeListSize) {
+            isConverged = true;
         }
     }
 
@@ -73,7 +80,6 @@ public class Node extends Thread{
             // Make the distance vector based on shortest paths to all nodes
             for(int j=0; j < distanceTable[0].length; j++){
                 distanceVector[j] = 999;
-
                 for(int i=0; i < distanceTable.length; i++){
                     if(distanceTable[i][j] < distanceVector[j]){
                         distanceVector[j] = distanceTable[i][j];
@@ -139,7 +145,7 @@ public class Node extends Thread{
         this.linkBandwidth.put(neighbor, cost);
     }
     public void addToDistanceTable(int neighbor, int destination, int cost){
-        //If the index of the neigbor or the destination exceeds the size of the distanceTable
+        //If the index of the neighbor or the destination exceeds the size of the distanceTable
         //increase its size
         if(distanceTable.length < neighbor) {
             int[][] temp = new int[neighbor + 10][neighbor + 10];
@@ -220,7 +226,7 @@ public class Node extends Thread{
         return distanceTable;
     }
 
-    public TextArea getNodeGUI() { return nodeGUI; }
+    public NodeGUI getNodeGUI() { return nodeGUI; }
 
     public void setNeighbors(Hashtable<Integer, Node> neighbors) {
         this.neighbors = neighbors;

@@ -3,7 +3,6 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class ModivSim {
-
     // Holds the nodes in the topology
     private static List<Node> nodeList = new ArrayList<Node>();
 
@@ -24,7 +23,7 @@ public class ModivSim {
         for (Node node: nodeList){
             node.printInfo();
         }
-        sendDistanceVectors();
+        //sendDistanceVectors();
         /*
         for (int i=0; i<10; i++) {
             distanceVectorRouting();
