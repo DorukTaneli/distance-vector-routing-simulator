@@ -73,9 +73,8 @@ public class Node {
         }
         if (noChange) {
             nonEntry++;
-            System.out.println(nodeID + " - " + nonEntry);
+            System.out.println(nodeID + " -- " + nonEntry);
         }
-
         if (nonEntry > 15) {
             readyToConverge = true;
         }
