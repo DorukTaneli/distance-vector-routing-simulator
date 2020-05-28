@@ -144,14 +144,15 @@ public class Node {
             int cost2 = 999;
             int node1 = 999;
             int node2 = 999;
-            for(int i=0; i<distanceTable.length; i++){
-                if(distanceTable[i][j]<cost1){
-                    cost1 = distanceTable[i][j];
-                    node1 = i;
+            for(Map.Entry<Integer, Integer> entry : linkCost.entrySet()) {
+                int neighborID = entry.getKey();
+                if(distanceTable[neighborID][j]<cost1){
+                    cost1 = distanceTable[neighborID][j];
+                    node1 = neighborID;
                 }
-                else if(distanceTable[i][j]<cost2){
-                    distanceTable[i][j]=cost2;
-                    node2 = i;
+                else if(distanceTable[neighborID][j]<cost2){
+                    distanceTable[neighborID][j]=cost2;
+                    node2 = neighborID;
                 }
             }
             forwardingTable.put(Integer.toString(j), '(' + Integer.toString(node1) + ',' + Integer.toString(node2) + ')');
