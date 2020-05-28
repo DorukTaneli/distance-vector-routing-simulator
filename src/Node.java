@@ -73,7 +73,7 @@ public class Node {
         }
         if (noChange) {
             nonEntry++;
-            System.out.println(nodeID + "sikiş" + nonEntry);
+            System.out.println(nodeID + " - " + nonEntry);
         }
 
         if (nonEntry > 15) {
