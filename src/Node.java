@@ -1,6 +1,6 @@
 import java.util.*;
 
-public class Node extends Thread {
+public class Node {
     private int nodeID;
     private Hashtable <Integer, Node> neighbors;
     private Hashtable<Integer, Integer> linkCost; //holds the link costs to the node's direct neighbors
@@ -44,7 +44,7 @@ public class Node extends Thread {
 
     /**
      * <p>
-     *     The method is called when the current node receives a distance vector update from one of its neighbors.
+     *     The method isI am convergence: " called when the current node receives a distance vector update from one of its neighbors.
      *     Upon receiving the message, the method checks if its own distance table needs to be changed in the case of a lower cost to a target node
      * </p>
      * @param m the message object that holds the distance vector of the node that sent the message
@@ -56,17 +56,31 @@ public class Node extends Thread {
             nodeGUI.print(distance + " abc ");
         }
         for(int i =0; i < distanceVectorReceived.length; i++){
-            //if(distanceVectorReceived[i] < distanceTable[sourceNode][i]){
-                //nodeGUI.println("Entry changed from: " + distanceTable[sourceNode][i] + " to " + distanceVectorReceived[i]);
-            this.distanceTable[sourceNode][i] = Math.min(distanceVectorReceived[i], distanceTable[sourceNode][i]);
-                //addToDistanceTable(sourceNode, i, distanceVectorReceived[i]);
-            //} else {
-                //nonEntry++;
-            //}
+            if(distanceVectorReceived[i] < distanceTable[sourceNode][i]){
+                nodeGUI.println("Entry changed from: " + distanceTable[sourceNode][i] + " to " + distanceVectorReceived[i]);
+            //this.distanceTable[sourceNode][i] = Math.min(distanceVectorReceived[i], distanceTable[sourceNode][i]);
+                addToDistanceTable(sourceNode, i, distanceVectorReceived[i]);
+            } else {
+                nonEntry++;
+                //System.out.println("Non-entry for " + nodeID + ": " + nonEntry);
+                //System.out.println("isConverged for " + nodeID + ": " + isConverged);distance: distanceTable[nodeID]
+            }
         }
-        //if (nonEntry >= nodeListSize) {
-         //   isConverged = true;
-        //}
+        int distanceToSource = distanceTable[nodeID][sourceNode];
+        for (int i=0; i<distanceVectorReceived.length; i++){
+            //distanceTable[nodeID][i] = Math.min(distanceTable[nodeID][i], distanceToSource + distanceVectorReceived[i]);
+
+            if(distanceToSource + distanceVectorReceived[i] < distanceTable[nodeID][i]){
+                addToDistanceTable(nodeID, i, distanceToSource + distanceVectorReceived[i]);
+            }
+
+        }
+        /*
+        System.out.println(nodeID + " _ " + nonEntry);
+        if (nonEntry >= 2) {
+            isConverged = true;
+        }
+        */
     }
 
     /**
@@ -82,16 +96,16 @@ public class Node extends Thread {
             Message message;
             int distanceVector[] = new int[distanceTable[0].length];
             // Make the distance vector based on shortest paths to all nodes
-            for(int j=0; j < distanceTable[0].length; j++){
-                distanceVector[j] = 999;
+            for(int j=0; j < distanceVector.length; j++){
                 /*
+                distanceVector[j] = 999;
                 for(int i=0; i < distanceTable.length; i++){
                     if(distanceTable[i][j] < distanceVector[j]){
                         distanceVector[j] = distanceTable[i][j];
                     }
                 }
                 */
-                distanceVector[j] = Math.min(distanceVector[j], distanceTable[nodeID][j]);
+                distanceVector[j] = distanceTable[nodeID][j];
             }
             // Traverse all the neighbors and notify them
             for(Map.Entry<Integer, Integer> entry : linkCost.entrySet()) {
@@ -101,7 +115,7 @@ public class Node extends Thread {
             }
             return true;
         }
-        System.out.println(nodeID);
+        //System.out.println(nodeID);
         /*
         System.out.println("dst  |   0   1   2   3   4");
         for (int[] table: distanceTable) {
@@ -154,6 +168,7 @@ public class Node extends Thread {
     public void addToDistanceTable(int neighbor, int destination, int cost){
         //If the index of the neighbor or the destination exceeds the size of the distanceTable
         //increase its size
+        /*
         if(distanceTable.length < neighbor) {
             int[][] temp = new int[neighbor + 10][neighbor + 10];
             for (int i = 0; i < distanceTable.length; i++) {
@@ -172,7 +187,9 @@ public class Node extends Thread {
             }
             setDistanceTable(temp);
         }
+        */
         this.distanceTable[neighbor][destination] = cost;
+        this.distanceTable[destination][neighbor] = cost;
     }
     public void addToBottleNeckBandwidthTable(int neighbor, int cost){
         this.bottleNeckBandwidthTable.add(neighbor, cost);

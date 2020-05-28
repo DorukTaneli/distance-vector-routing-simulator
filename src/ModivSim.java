@@ -6,7 +6,7 @@ public class ModivSim {
     // Holds the nodes in the topology
     private static List<Node> nodeList = new ArrayList<Node>();
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException, InterruptedException {
         createTopology();
         setNeighbors();
         for (Node node: nodeList) {
@@ -34,15 +34,13 @@ public class ModivSim {
                 node.getNodeGUI().print("\n");
             }
         }
-        /*
-        for (int i=0; i<10; i++) {
-            distanceVectorRouting();
-        }
+
+        distanceVectorRouting();
         for (Node node: nodeList) {
             node.setConverged(true);
         }
         distanceVectorRouting();
-        */
+
 
     }
 
@@ -132,6 +130,7 @@ public class ModivSim {
     private static void sendDistanceVectors() {
         for (Node node: nodeList){
             node.sendUpdate();
+            System.out.println("Update sent from " + node.getNodeID());
         }
     }
 
@@ -141,8 +140,9 @@ public class ModivSim {
         System.out.println("Please enter the period of time (s) for DVR algorithm to work: ");
         String p = new String();
         p = input.readLine();
-        while(true) {
-            int convergence = 0;
+        //while(true) {
+        for (int i = 0; i<1000; i++){
+            //int convergence = 0;
             for (Node node: nodeList){
                 node.sendUpdate();
                 //for (int[] distanceTable: node.getDistanceTable()) {
@@ -151,15 +151,17 @@ public class ModivSim {
                 //       System.out.println(distance);
                 //   }
                 //}
-                if (node.isConverged()) {
-                    convergence++;
-                }
+                //System.out.println(node.getNodeID() + " - " + node.isConverged());
+                //if (node.isConverged()) {
+                  //  convergence++;
+                //}
             }
-            if (convergence == nodeList.size()) {
-                System.out.println("END");
-                break;
-            }
-            TimeUnit.SECONDS.sleep(Long.parseLong(p));
+            //System.out.println("I am convergence: " + convergence);
+            //if (convergence >= nodeList.size()) {
+              //  System.out.println("END");
+               // break;
+            //}
+            //TimeUnit.SECONDS.sleep(Long.parseLong(p));
         }
         for (Node node: nodeList){
             node.printInfo();
