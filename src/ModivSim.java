@@ -5,17 +5,20 @@ import java.util.concurrent.TimeUnit;
 public class ModivSim {
     // Holds the nodes in the topology
     private static List<Node> nodeList = new ArrayList<Node>();
+    private static int convergenceRound = 0;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException, InterruptedException {
         createTopology();
         setNeighbors();
         for (Node node: nodeList) {
-            System.out.println(node.getNodeID());
-            node.getNodeGUI().println("dst  |   0   1   2   3   4");
+            node.getNodeGUI().println("Current state for router " + node.getNodeID() + " at time 0.0");
+            node.getNodeGUI().println();
+            node.getNodeGUI().println("Distance Table");
+            node.getNodeGUI().println("dst  |   0      1      2      3      4");
             for (int[] table: node.getDistanceTable()) {
                 node.getNodeGUI().print("router  |");
                 for (int distance: table) {
-                    node.getNodeGUI().print("  " + distance);
+                    node.getNodeGUI().print("   " + distance);
                 }
                 node.getNodeGUI().print("\n");
             }
@@ -23,27 +26,27 @@ public class ModivSim {
         for (Node node: nodeList){
             node.printInfo();
         }
-        sendDistanceVectors();
-        for (Node node: nodeList){
-            node.getNodeGUI().println("dst  |   0   1   2   3   4");
+        distanceVectorRouting();
+        for (Node node: nodeList) {
+            node.getNodeGUI().println("Current state for router " + node.getNodeID() + " after convergence at round " + convergenceRound);
+            node.getNodeGUI().println();
+            node.getNodeGUI().println("Distance Table");
+            node.getNodeGUI().println("dst  |   0      1      2      3      4");
             for (int[] table: node.getDistanceTable()) {
                 node.getNodeGUI().print("router  |");
                 for (int distance: table) {
-                    node.getNodeGUI().print("  " + distance);
+                    node.getNodeGUI().print("   " + distance);
                 }
                 node.getNodeGUI().print("\n");
             }
         }
-        /*
-        for (int i=0; i<10; i++) {
-            distanceVectorRouting();
+        for (Node node: nodeList){
+            node.printInfo();
         }
-        for (Node node: nodeList) {
-            node.setConverged(true);
+        System.out.println("DONE");
+        for (Node node: nodeList){
+            node.join();
         }
-        distanceVectorRouting();
-        */
-        
         System.out.println("Reading flows from flow.txt");
         FlowRouter fr = new FlowRouter(nodeList);
         fr.PrintFlows();
@@ -100,6 +103,7 @@ public class ModivSim {
                     System.out.println(entry.getKey() + "->" + entry.getValue());
                 }
                 Node node = new Node(nodeID, linkCost, linkBandwidth, size);
+                node.start();
                 nodeList.add(nodeID, node);
                 myReader.close();
 
@@ -134,41 +138,29 @@ public class ModivSim {
         }
     }
 
-    private static void sendDistanceVectors() {
-        for (Node node: nodeList){
-            node.sendUpdate();
-        }
-    }
-
     private static void distanceVectorRouting() throws IOException, InterruptedException {
         BufferedReader input =
                 new BufferedReader(new InputStreamReader(System.in));
-        System.out.println("Please enter the period of time (s) for DVR algorithm to work: ");
+        System.out.println("Please enter the period of time (s) for ModivSim to work: ");
         String p = new String();
         p = input.readLine();
         while(true) {
             int convergence = 0;
             for (Node node: nodeList){
                 node.sendUpdate();
-                //for (int[] distanceTable: node.getDistanceTable()) {
-                //   System.out.println("--- a dt ---");
-                //   for (int distance: distanceTable) {
-                //       System.out.println(distance);
-                //   }
-                //}
-                if (node.isConverged()) {
+                if (node.isReadyToConverge()) {
                     convergence++;
                 }
             }
-            if (convergence == nodeList.size()) {
-                System.out.println("END");
+            if (convergence >= nodeList.size()) {
+                for (Node node: nodeList) {
+                    node.setConverged(true);
+                }
                 break;
+            } else {
+                convergenceRound++;
             }
             TimeUnit.SECONDS.sleep(Long.parseLong(p));
         }
-        for (Node node: nodeList){
-            node.printInfo();
-        }
-
     }
 }
