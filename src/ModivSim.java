@@ -10,12 +10,11 @@ public class ModivSim {
         createTopology();
         setNeighbors();
         for (Node node: nodeList) {
-            System.out.println(node.getNodeID());
-            node.getNodeGUI().println("dst  |   0   1   2   3   4");
+            node.getNodeGUI().println("dst  |   0      1      2      3      4");
             for (int[] table: node.getDistanceTable()) {
                 node.getNodeGUI().print("router  |");
                 for (int distance: table) {
-                    node.getNodeGUI().print("  " + distance);
+                    node.getNodeGUI().print("   " + distance);
                 }
                 node.getNodeGUI().print("\n");
             }
@@ -23,25 +22,21 @@ public class ModivSim {
         for (Node node: nodeList){
             node.printInfo();
         }
-        sendDistanceVectors();
-        for (Node node: nodeList){
-            node.getNodeGUI().println("dst  |   0   1   2   3   4");
+        distanceVectorRouting();
+        for (Node node: nodeList) {
+            node.getNodeGUI().println("dst  |   0      1      2      3      4");
             for (int[] table: node.getDistanceTable()) {
                 node.getNodeGUI().print("router  |");
                 for (int distance: table) {
-                    node.getNodeGUI().print("  " + distance);
+                    node.getNodeGUI().print("   " + distance);
                 }
                 node.getNodeGUI().print("\n");
             }
         }
-
-        distanceVectorRouting();
-        for (Node node: nodeList) {
-            node.setConverged(true);
+        for (Node node: nodeList){
+            node.printInfo();
         }
-        distanceVectorRouting();
-
-
+        System.out.println("DONE");
     }
 
     /**
@@ -140,32 +135,31 @@ public class ModivSim {
         System.out.println("Please enter the period of time (s) for DVR algorithm to work: ");
         String p = new String();
         p = input.readLine();
-        //while(true) {
-        for (int i = 0; i<1000; i++){
-            //int convergence = 0;
+        while(true) {
+            int convergence = 0;
             for (Node node: nodeList){
                 node.sendUpdate();
-                //for (int[] distanceTable: node.getDistanceTable()) {
-                //   System.out.println("--- a dt ---");
-                //   for (int distance: distanceTable) {
-                //       System.out.println(distance);
-                //   }
-                //}
-                //System.out.println(node.getNodeID() + " - " + node.isConverged());
-                //if (node.isConverged()) {
-                  //  convergence++;
-                //}
+                /*
+                for (int[] distanceTable: node.getDistanceTable()) {
+                   System.out.println("--- a dt ---");
+                   for (int distance: distanceTable) {
+                       System.out.println(distance);
+                   }
+                }
+                System.out.println(node.getNodeID() + " - " + node.isConverged());
+                 */
+                if (node.isReadyToConverge()) {
+                    convergence++;
+                }
             }
-            //System.out.println("I am convergence: " + convergence);
-            //if (convergence >= nodeList.size()) {
-              //  System.out.println("END");
-               // break;
-            //}
-            //TimeUnit.SECONDS.sleep(Long.parseLong(p));
+            if (convergence >= nodeList.size()) {
+                System.out.println("END");
+                for (Node node: nodeList) {
+                    node.setConverged(true);
+                }
+                break;
+            }
+            TimeUnit.SECONDS.sleep(Long.parseLong(p));
         }
-        for (Node node: nodeList){
-            node.printInfo();
-        }
-
     }
 }

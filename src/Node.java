@@ -11,6 +11,7 @@ public class Node {
     private NodeGUI nodeGUI;
     private int nonEntry = 0;
     private int nodeListSize;
+    private boolean readyToConverge = false;
 
     public Node(int nodeID, Hashtable<Integer, Integer> linkCost, Hashtable<Integer, Integer> linkBandwidth, int size) {
         this.nodeID = nodeID;
@@ -34,22 +35,23 @@ public class Node {
      * @param linkCost hashtable that holds the cost to the direct neighbor i. The keys and values are integers
      */
     private void makeDistanceTable(Hashtable<Integer, Integer> linkCost) {
-        distanceTable[this.nodeID][this.nodeID] = 0;
+        distanceTable[nodeID][nodeID] = 0;
         for(Map.Entry<Integer, Integer> entry : linkCost.entrySet()) {
             int neighborID = entry.getKey();
-            distanceTable[this.nodeID][neighborID] = linkCost.get(neighborID);
-            distanceTable[neighborID][this.nodeID] = linkCost.get(neighborID);
+            distanceTable[nodeID][neighborID] = linkCost.get(neighborID);
+            distanceTable[neighborID][nodeID] = linkCost.get(neighborID);
         }
     }
 
     /**
      * <p>
-     *     The method isI am convergence: " called when the current node receives a distance vector update from one of its neighbors.
+     *     The method receiveUpdate: " called when the current node receives a distance vector update from one of its neighbors.
      *     Upon receiving the message, the method checks if its own distance table needs to be changed in the case of a lower cost to a target node
      * </p>
      * @param m the message object that holds the distance vector of the node that sent the message
      */
     public void receiveUpdate(Message m){
+        boolean noChange = true;
         int sourceNode = m.getSenderID();
         int[] distanceVectorReceived = m.getDistanceVector();
         for (int distance: distanceVectorReceived) {
@@ -58,34 +60,30 @@ public class Node {
         for(int i =0; i < distanceVectorReceived.length; i++){
             if(distanceVectorReceived[i] < distanceTable[sourceNode][i]){
                 nodeGUI.println("Entry changed from: " + distanceTable[sourceNode][i] + " to " + distanceVectorReceived[i]);
-            //this.distanceTable[sourceNode][i] = Math.min(distanceVectorReceived[i], distanceTable[sourceNode][i]);
                 addToDistanceTable(sourceNode, i, distanceVectorReceived[i]);
-            } else {
-                nonEntry++;
-                //System.out.println("Non-entry for " + nodeID + ": " + nonEntry);
-                //System.out.println("isConverged for " + nodeID + ": " + isConverged);distance: distanceTable[nodeID]
+                noChange = false;
             }
         }
         int distanceToSource = distanceTable[nodeID][sourceNode];
         for (int i=0; i<distanceVectorReceived.length; i++){
-            //distanceTable[nodeID][i] = Math.min(distanceTable[nodeID][i], distanceToSource + distanceVectorReceived[i]);
-
             if(distanceToSource + distanceVectorReceived[i] < distanceTable[nodeID][i]){
                 addToDistanceTable(nodeID, i, distanceToSource + distanceVectorReceived[i]);
+                noChange = false;
             }
+        }
+        if (noChange) {
+            nonEntry++;
+            System.out.println(nodeID + "sikiş" + nonEntry);
+        }
 
+        if (nonEntry > 15) {
+            readyToConverge = true;
         }
-        /*
-        System.out.println(nodeID + " _ " + nonEntry);
-        if (nonEntry >= 2) {
-            isConverged = true;
-        }
-        */
     }
 
     /**
      * <p>
-     *     This methods is called when the node has an update in its distanceTable and needs to notify its neighbors. The method creates the distance vector for the node
+     *     This method is called when the node has an update in its distanceTable and needs to notify its neighbors. The method creates the distance vector for the node
      *     that contains the shortest path values to all other nodes, creates a message object and passes the message object by calling the receiveUpdate method of its direct
      *     neighbors.
      * </p>
@@ -97,36 +95,16 @@ public class Node {
             int distanceVector[] = new int[distanceTable[0].length];
             // Make the distance vector based on shortest paths to all nodes
             for(int j=0; j < distanceVector.length; j++){
-                /*
-                distanceVector[j] = 999;
-                for(int i=0; i < distanceTable.length; i++){
-                    if(distanceTable[i][j] < distanceVector[j]){
-                        distanceVector[j] = distanceTable[i][j];
-                    }
-                }
-                */
                 distanceVector[j] = distanceTable[nodeID][j];
             }
             // Traverse all the neighbors and notify them
             for(Map.Entry<Integer, Integer> entry : linkCost.entrySet()) {
                 int neighborID = entry.getKey();
-                message = new Message(this.nodeID, neighborID, linkBandwidth.get(neighborID), distanceVector);
+                message = new Message(nodeID, neighborID, linkBandwidth.get(neighborID), distanceVector);
                 neighbors.get(neighborID).receiveUpdate(message);
             }
             return true;
         }
-        //System.out.println(nodeID);
-        /*
-        System.out.println("dst  |   0   1   2   3   4");
-        for (int[] table: distanceTable) {
-            System.out.print("router  |");
-            for (int distance: table) {
-                System.out.print("  " + distance);
-            }
-            System.out.print("\n");
-        }
-
-         */
         return false;
     }
 
@@ -161,15 +139,14 @@ public class Node {
     }
 
     public void addToLinkCostTable(int neighbor, int cost){
-        this.linkCost.put(neighbor, cost);
+        linkCost.put(neighbor, cost);
     }
     public void addToLinkBandwidthTable(int neighbor, int cost){
-        this.linkBandwidth.put(neighbor, cost);
+        linkBandwidth.put(neighbor, cost);
     }
     public void addToDistanceTable(int neighbor, int destination, int cost){
         //If the index of the neighbor or the destination exceeds the size of the distanceTable
         //increase its size
-        /*
         if(distanceTable.length < neighbor) {
             int[][] temp = new int[neighbor + 10][neighbor + 10];
             for (int i = 0; i < distanceTable.length; i++) {
@@ -188,12 +165,12 @@ public class Node {
             }
             setDistanceTable(temp);
         }
-        */
-        this.distanceTable[neighbor][destination] = cost;
-        this.distanceTable[destination][neighbor] = cost;
+        distanceTable[neighbor][destination] = cost;
+        distanceTable[destination][neighbor] = cost;
     }
+
     public void addToBottleNeckBandwidthTable(int neighbor, int cost){
-        this.bottleNeckBandwidthTable.add(neighbor, cost);
+        bottleNeckBandwidthTable.add(neighbor, cost);
     }
 
     public void printInfo() {
@@ -261,5 +238,8 @@ public class Node {
         return neighbors;
     }
 
+    public boolean isReadyToConverge() {
+        return readyToConverge;
+    }
 
 }
