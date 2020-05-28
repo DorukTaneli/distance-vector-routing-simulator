@@ -1,6 +1,6 @@
 import java.util.*;
 
-public class Node {
+public class Node extends Thread {
     private int nodeID;
     private Hashtable <Integer, Node> neighbors;
     private Hashtable<Integer, Integer> linkCost; //holds the link costs to the node's direct neighbors
@@ -54,9 +54,7 @@ public class Node {
         boolean noChange = true;
         int sourceNode = m.getSenderID();
         int[] distanceVectorReceived = m.getDistanceVector();
-        for (int distance: distanceVectorReceived) {
-            nodeGUI.print(distance + " abc ");
-        }
+        nodeGUI.println("Message sent by: " + sourceNode + " to " + nodeID + ".");
         for(int i =0; i < distanceVectorReceived.length; i++){
             if(distanceVectorReceived[i] < distanceTable[sourceNode][i]){
                 nodeGUI.println("Entry changed from: " + distanceTable[sourceNode][i] + " to " + distanceVectorReceived[i]);
@@ -73,7 +71,6 @@ public class Node {
         }
         if (noChange) {
             nonEntry++;
-            System.out.println(nodeID + " -- " + nonEntry);
         }
         if (nonEntry > 15) {
             readyToConverge = true;
@@ -100,6 +97,11 @@ public class Node {
             for(Map.Entry<Integer, Integer> entry : linkCost.entrySet()) {
                 int neighborID = entry.getKey();
                 message = new Message(nodeID, neighborID, linkBandwidth.get(neighborID), distanceVector);
+                nodeGUI.print("Message sender ID: " + nodeID + " -- " + "Message Content: [ ");
+                for (int distance: distanceVector) {
+                    nodeGUI.print(distance + " ");
+                }
+                nodeGUI.println("]");
                 neighbors.get(neighborID).receiveUpdate(message);
             }
             return true;

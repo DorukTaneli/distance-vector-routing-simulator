@@ -5,11 +5,15 @@ import java.util.concurrent.TimeUnit;
 public class ModivSim {
     // Holds the nodes in the topology
     private static List<Node> nodeList = new ArrayList<Node>();
+    private static int convergenceRound = 0;
 
     public static void main(String[] args) throws IOException, InterruptedException {
         createTopology();
         setNeighbors();
         for (Node node: nodeList) {
+            node.getNodeGUI().println("Current state for router " + node.getNodeID() + " at time 0.0");
+            node.getNodeGUI().println();
+            node.getNodeGUI().println("Distance Table");
             node.getNodeGUI().println("dst  |   0      1      2      3      4");
             for (int[] table: node.getDistanceTable()) {
                 node.getNodeGUI().print("router  |");
@@ -24,6 +28,9 @@ public class ModivSim {
         }
         distanceVectorRouting();
         for (Node node: nodeList) {
+            node.getNodeGUI().println("Current state for router " + node.getNodeID() + " after convergence at round " + convergenceRound);
+            node.getNodeGUI().println();
+            node.getNodeGUI().println("Distance Table");
             node.getNodeGUI().println("dst  |   0      1      2      3      4");
             for (int[] table: node.getDistanceTable()) {
                 node.getNodeGUI().print("router  |");
@@ -37,6 +44,9 @@ public class ModivSim {
             node.printInfo();
         }
         System.out.println("DONE");
+        for (Node node: nodeList){
+            node.join();
+        }
     }
 
     /**
@@ -88,6 +98,7 @@ public class ModivSim {
                     System.out.println(entry.getKey() + "->" + entry.getValue());
                 }
                 Node node = new Node(nodeID, linkCost, linkBandwidth, size);
+                node.start();
                 nodeList.add(nodeID, node);
                 myReader.close();
 
@@ -122,42 +133,27 @@ public class ModivSim {
         }
     }
 
-    private static void sendDistanceVectors() {
-        for (Node node: nodeList){
-            node.sendUpdate();
-            System.out.println("Update sent from " + node.getNodeID());
-        }
-    }
-
     private static void distanceVectorRouting() throws IOException, InterruptedException {
         BufferedReader input =
                 new BufferedReader(new InputStreamReader(System.in));
-        System.out.println("Please enter the period of time (s) for DVR algorithm to work: ");
+        System.out.println("Please enter the period of time (s) for ModivSim to work: ");
         String p = new String();
         p = input.readLine();
         while(true) {
             int convergence = 0;
             for (Node node: nodeList){
                 node.sendUpdate();
-                /*
-                for (int[] distanceTable: node.getDistanceTable()) {
-                   System.out.println("--- a dt ---");
-                   for (int distance: distanceTable) {
-                       System.out.println(distance);
-                   }
-                }
-                System.out.println(node.getNodeID() + " - " + node.isConverged());
-                 */
                 if (node.isReadyToConverge()) {
                     convergence++;
                 }
             }
             if (convergence >= nodeList.size()) {
-                System.out.println("END");
                 for (Node node: nodeList) {
                     node.setConverged(true);
                 }
                 break;
+            } else {
+                convergenceRound++;
             }
             TimeUnit.SECONDS.sleep(Long.parseLong(p));
         }
